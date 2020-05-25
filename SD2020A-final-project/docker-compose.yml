@@ -1,0 +1,46 @@
+---
+version: '2.4'
+services:
+# Base de datos Mongo DB
+  mongo:
+    container_name: mongo
+    image: mongo:4.2
+    ports:
+      - 3306:3306
+    networks:
+      - app-network
+#Back y Front web intance - COntenedor
+  aik-app-api:
+    build: aik-app-api
+    ports: 
+      - 3000:3000
+    networks:
+      - app-network
+#Con el pràmetro Scale:2 se crea una replica del contenedor que contiene el FrontEnd de la aplicacion
+  aik-app-ui:
+    build: aik-app-ui
+    scale: 2
+    #ports:
+    #  - 3030:3030
+    networks:
+      - app-network
+    depends_on:
+      - aik-app-api
+
+#Front y Back web instance 2
+
+#Proxy
+  proxy:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+    - "8080:8080"
+    links:
+    - aik-app-ui:aik-app-ui
+      #- node2:node2
+
+    #Redes
+networks:
+  app-network:
+    driver: bridge
